@@ -1,4 +1,4 @@
-namespace HULK_Interpreter.libs;
+namespace HULK_libs.models;
 
 public enum MathOps {
 	Sum,

@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-namespace HULK_Interpreter.libs;
+namespace HULK_libs;
 
 public static class Patterns {
 	// Describe a plain file path

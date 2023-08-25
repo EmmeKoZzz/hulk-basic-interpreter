@@ -1,4 +1,5 @@
-namespace HULK_Interpreter.libs;
+namespace HULK_libs;
+using models;
 
 public static class Basics {
 	// print in argument

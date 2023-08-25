@@ -1,4 +1,4 @@
-namespace HULK_Interpreter.libs;
+namespace HULK_libs;
 
 public static class Syntax {
 	// verify if the string (input) is a valid expression

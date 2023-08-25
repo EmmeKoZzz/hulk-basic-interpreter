@@ -1,5 +1,5 @@
 ﻿namespace HULK_Interpreter;
-using libs;
+using HULK_libs;
 
 internal static class Program {
 	/**
@@ -12,7 +12,9 @@ internal static class Program {
 		// PROGRAM
 		while (true) {
 			// Take the input and check if isn't empty or null
-			if (!Ask(out string input)) continue;
+			//if (!View.Ask(out string input)) continue;
+			const string input = "/home/EmmeKoZzz/Programming/UNI/hulk-basic-interpreter/Expressions.txt";
+
 			// Take the input and check the validity of the expression
 			if (!Syntax.IsExpression(input, out string[] expressions) &&
 			    !Syntax.IsFilePath(input, out expressions)) continue;
@@ -29,5 +31,6 @@ internal static class Program {
 	 */
 	private static void ComputeExpression(string expression) {
 		Basics.Print($"Expression: {expression}");
+		
 	}
 }
