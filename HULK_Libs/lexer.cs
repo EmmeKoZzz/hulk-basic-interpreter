@@ -4,7 +4,7 @@ namespace HULK_libs;
 
 public enum TokenType {
 	Identifier,
-	FunctionSetter,
+	FunctionDeclarator,
 
 	// H.U.L.K Value Types
 	Number,
@@ -28,7 +28,8 @@ public struct Token {
 	public TokenType Key { get; }
 	public string Value { get; }
 
-	public Token(TokenType type, string src) => (Key, Value) = (type, src);
+	private Token(TokenType type, string src) => (Key, Value) = (type, src);
+	public static Token Init(TokenType type, string src) => new Token(type, src);
 }
 
 public static class Lexer {
@@ -37,19 +38,24 @@ public static class Lexer {
 	private static bool IsDigit(char c) => Regex.Match(c.ToString(), @"\d").Success;
 	private static string GetToken(string src, string pattern) => Regex.Match(src, pattern).Value;
 
+	// Aux Methods
+	private static readonly Func<TokenType, string, Token> InitTk = Token.Init;
+
+	// Properties
+	private static readonly Dictionary<string, TokenType> Keywords = new() {
+		{ "let", TokenType.OpenVar },
+		{ "in", TokenType.CloseVar },
+		{ "function", TokenType.FunctionDeclarator },
+		{ "true", TokenType.BinaryValue },
+		{ "false", TokenType.BinaryValue }
+	};
+
 	// Set Means to Expression parts;
 	public static Token[] Tokenize(string expression) {
 		// the list of reserved word for the language
-		var keywords = new Dictionary<string, TokenType>() {
-			{ "let", TokenType.OpenVar },
-			{ "in", TokenType.CloseVar },
-			{ "function", TokenType.FunctionSetter },
-			{ "true", TokenType.BinaryValue },
-			{ "false", TokenType.BinaryValue }
-		};
 		var tokens = new List<Token>();
 
-		//
+		// This loop will build the tokens List
 		while (expression.Length > 0) {
 			char at = expression[0];
 			string match;
@@ -62,44 +68,44 @@ public static class Lexer {
 					continue;
 				case '+' or '-' or '/' or '*' or '%' or '^' or '>' or '<' or '=': {
 					match = expression is [_, '=', ..] ? expression[..2] : at.ToString();
-					expression = AddToken(expression, new Token(TokenType.BinaryOperator, match));
+					expression = AddToken(expression, InitTk(TokenType.BinaryOperator, match));
 					continue;
 				}
 				case '"' or '\'': {
 					match = GetToken(expression[1..], """(?<!")[^"]+|(?<!')[^']+""");
-					tk = new Token(TokenType.Text, match);
+					tk = InitTk(TokenType.Text, match);
 					expression = AddToken(expression, tk, 2);
 					continue;
 				}
 				case ',':
-					expression = AddToken(expression, new Token(TokenType.ColonConjunction, at.ToString()));
+					expression = AddToken(expression, InitTk(TokenType.ColonConjunction, at.ToString()));
 					continue;
 				case '(':
-					expression = AddToken(expression, new Token(TokenType.OpenParen, at.ToString()));
+					expression = AddToken(expression, InitTk(TokenType.OpenParen, at.ToString()));
 					continue;
 				case ')':
-					expression = AddToken(expression, new Token(TokenType.CloseParen, at.ToString()));
+					expression = AddToken(expression, InitTk(TokenType.CloseParen, at.ToString()));
 					continue;
 			}
 
 			// Multiple Characters Tokens
 			if (IsAlpha(at)) {
 				match = GetToken(expression, @"^\w+");
-				tk = keywords.TryGetValue(match, out TokenType type)
-					     ? new Token(type, match)
-					     : new Token(TokenType.Identifier, match);
+				tk = Keywords.TryGetValue(match, out TokenType type)
+					     ? InitTk(type, match)
+					     : InitTk(TokenType.Identifier, match);
 				expression = AddToken(expression, tk);
 				continue;
 			}
 
 			if (expression is ['!', '=', ..]) {
-				expression = AddToken(expression, new Token(TokenType.BinaryOperator, expression[..2]));
+				expression = AddToken(expression, InitTk(TokenType.BinaryOperator, expression[..2]));
 			}
 
 			if (!IsDigit(at)) throw new Exception("char unrecognizable: " + at);
 
 			match = GetToken(expression, @"^\d+");
-			tk = new Token(TokenType.Number, match);
+			tk = InitTk(TokenType.Number, match);
 			expression = AddToken(expression, tk);
 		}
 
