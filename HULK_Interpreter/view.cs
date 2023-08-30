@@ -1,4 +1,4 @@
-namespace HULK_libs;
+namespace HULK_Interpreter;
 
 public static class View {
 	// INPUT

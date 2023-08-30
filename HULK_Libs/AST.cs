@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 namespace HULK_libs;
 
 public enum ASTNode {
@@ -10,48 +12,66 @@ public enum ASTNode {
 	BinaryExpression,
 }
 
-public interface IExpression {
-	ASTNode Kind { get; }
+public enum StmtType {
+	Statement,
+	Expression
 }
 
+public abstract class Expression : AbstractStatement {
+	protected Expression(ASTNode kind) : base(StmtType.Expression, kind) { }
+}
+
+public abstract class Statement : AbstractStatement {
+	protected Statement(ASTNode kind) : base(StmtType.Statement, kind) { }
+}
+
+public abstract class AbstractStatement : IStmt {
+	public StmtType Type { get; }
+	public ASTNode Kind { get; }
+
+	protected AbstractStatement(StmtType type, ASTNode kind) {
+		(Type, Kind) = (type, kind);
+	}
+}
+
+public interface IStmt {
+	public StmtType Type { get; }
+	public ASTNode Kind { get; }
+}
 /*
  *  Expressions Types
  */
 
-public struct AST : IExpression {
-	public ASTNode Kind => ASTNode.Program;
-	public IExpression[] Body = Array.Empty<IExpression>();
-	public AST() { }
+public class AST : Statement {
+	public readonly List<IStmt> Body = new();
+	public AST() : base(ASTNode.Program) { }
 }
 
 //
 
-public struct BinaryExpression : IExpression {
-	public ASTNode Kind => ASTNode.BinaryExpression;
-	public IExpression Right { get; }
-	public IExpression Left { get; }
+public class BinaryExpression : Expression {
+	public Expression Right { get; }
+	public Expression Left { get; }
 	public string Op { get; }
 
-	public BinaryExpression(IExpression left, string op, IExpression right) {
+	public BinaryExpression(Expression left, string op, Expression right) : base(ASTNode.BinaryExpression) {
 		(Op, Left, Right) = (op, left, right);
 	}
 }
 
 //
 
-public struct NullLiteral : IExpression {
-	public ASTNode Kind => ASTNode.Null;
+public class NullLiteral : Expression {
 	public string Value = "null";
-	public NullLiteral() { }
+	public NullLiteral() : base(ASTNode.Null) { }
 }
 
 //
 
-public struct BooleanLiteral : IExpression {
-	public ASTNode Kind => ASTNode.Boolean;
+public class BooleanLiteral : Expression {
 	public bool Value;
 
-	public BooleanLiteral(string value) {
+	public BooleanLiteral(string value) : base(ASTNode.Boolean) {
 		this.Value = value switch {
 			"true" => true,
 			"false" => false,
@@ -62,29 +82,26 @@ public struct BooleanLiteral : IExpression {
 
 //
 
-public struct Number : IExpression {
-	public ASTNode Kind => ASTNode.Number;
-	public readonly float Value = 0;
+public class NumberLiteral : Expression {
+	public readonly float Value;
 
-	public Number(string value) {
-		if (!float.TryParse(value, out this.Value)) throw new Exception($"{value} isn't a valid number.");
+	public NumberLiteral(string value) : base(ASTNode.Number) {
+		if (!float.TryParse(value, out Value)) throw new Exception($"{value} isn't a valid number.");
 	}
 }
 
 //
 
-public struct Text : IExpression {
-	public ASTNode Kind => ASTNode.Text;
+public class TextLiteral : Expression {
 	public readonly string Value;
 
-	public Text(string text) => this.Value = text;
+	public TextLiteral(string text) : base(ASTNode.Text) => Value = text;
 }
 
 //
 
-public struct Identifier : IExpression {
-	public ASTNode Kind => ASTNode.Identifier;
+public class Identifier : Expression {
 	public string Symbol;
 
-	public Identifier(string sym) => this.Symbol = sym;
+	public Identifier(string sym) : base(ASTNode.Identifier) => Symbol = sym;
 }

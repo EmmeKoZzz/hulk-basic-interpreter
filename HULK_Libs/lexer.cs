@@ -10,6 +10,7 @@ public enum TokenType {
 	Number,
 	Text,
 	BinaryValue,
+	Null,
 
 	// Operators
 	BinaryOperator,
@@ -21,7 +22,10 @@ public enum TokenType {
 	CloseVar,
 
 	// Conjunction
-	ColonConjunction
+	ColonConjunction,
+
+	// End of expression
+	EOE
 }
 
 public struct Token {
@@ -47,7 +51,8 @@ public static class Lexer {
 		{ "in", TokenType.CloseVar },
 		{ "function", TokenType.FunctionDeclarator },
 		{ "true", TokenType.BinaryValue },
-		{ "false", TokenType.BinaryValue }
+		{ "false", TokenType.BinaryValue },
+		{ "null", TokenType.Null }
 	};
 
 	// Set Means to Expression parts;
@@ -66,7 +71,7 @@ public static class Lexer {
 				case ' ':
 					expression = expression[1..];
 					continue;
-				case '+' or '-' or '/' or '*' or '%' or '^' or '>' or '<' or '=': {
+				case '+' or '-' or '/' or '*' or '%' or '^' or '>' or '<' or '=' or '@': {
 					match = expression is [_, '=', ..] ? expression[..2] : at.ToString();
 					expression = AddToken(expression, InitTk(TokenType.BinaryOperator, match));
 					continue;
@@ -100,6 +105,7 @@ public static class Lexer {
 
 			if (expression is ['!', '=', ..]) {
 				expression = AddToken(expression, InitTk(TokenType.BinaryOperator, expression[..2]));
+				continue;
 			}
 
 			if (!IsDigit(at)) throw new Exception("char unrecognizable: " + at);
@@ -108,7 +114,10 @@ public static class Lexer {
 			tk = InitTk(TokenType.Number, match);
 			expression = AddToken(expression, tk);
 		}
-
+		
+		// Add the end of expression reference
+		tokens.Add(InitTk(TokenType.EOE,";"));
+		
 		/***
 		 * Return the Array of tokens
 		 */
