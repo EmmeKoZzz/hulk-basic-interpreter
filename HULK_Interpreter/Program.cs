@@ -9,7 +9,7 @@ internal static class Program {
 		// WELCOME PROMPT
 		View.Welcome();
 		Scope mainScope = new (null);
-		
+
 		// PROGRAM
 		while (true) {
 			// Take the input and check if isn't empty or null

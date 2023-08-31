@@ -1,5 +1,8 @@
+using System.Linq.Expressions;
+
 namespace HULK_libs;
 
+using static TokenType;
 using static Lexer;
 
 public class Parser {
@@ -12,7 +15,7 @@ public class Parser {
 
 	private Parser(string src) {
 		_tokens = Tokenize(src);
-		while (At().Key != TokenType.EOE) _ast.Body.Add(ParseStmt());
+		while (At().Key != EOE) _ast.Body.Add(ParseStmt());
 		_ast.Body.TrimExcess();
 	}
 
@@ -25,31 +28,43 @@ public class Parser {
 	private IStmt ParseStmt() =>
 		At().Key switch {
 			// STATEMENTS
-			TokenType.FunctionDeclarator => ParseFunDeclaration(),
-			TokenType.OpenVar or TokenType.ColonConjunction => ParseVarDeclaration(),
+			FunctionDeclarator => ParseFunDeclaration(),
+			OpenVar or ColonConjunction => ParseVarDeclaration(),
 			// EXPRESSIONS 
 			_ => ParseExpr()
 		};
 
+	/*
+	 * STATEMENTS
+	 */
+
 	private Statement ParseVarDeclaration() {
 		Eat();
-		Token name = Expect(TokenType.Identifier, "¡" +
-		                                          "Invalid Var Name.");
-		Expect(TokenType.AssignOperator, "After the name goes the '='... man ... bro, please focus.");
-		Statement declaration = new VarDeclaration(name.Value, ParseExpr());
+		Token name = Expect(Identifier, "¡" +
+		                                "Invalid Var Name.");
+		Expect(AssignOperator, "After the name goes the '='... man ... bro, please focus.");
+		VarDeclaration declaration = new VarDeclaration(name.Value, ParseExpr());
 
-		if (At().Key != TokenType.ColonConjunction)
-			Expect(TokenType.CloseVar, "Need to close the var declaration with 'in'.");
+		if (At().Key != ColonConjunction)
+			Expect(CloseVar, "Need to close the var declaration with 'in'.");
 
 		return declaration;
 	}
 
 	private Statement ParseFunDeclaration() {
-		throw new NotImplementedException();
+		Eat();
+		string funName = Expect(Identifier, "Need to Set a Function Identifier.").Value;
+		VarName[] @params = ArgsGatherer(() => new VarName(
+			                                 Expect(Identifier, "Invalid Syntax found declaring function args.").Value));
+		Expect(LambdaOperator, "Use the lambda operator to declare a body");
+		return new FunDeclaration(funName,@params,ParseStmt());
 	}
 
-	private Expression ParseExpr() => ParseComparativeExpression();
+	/*
+	 * EXPRESSIONS
+	 */
 
+	private Expression ParseExpr() => ParseComparativeExpression();
 
 	/*
 	 * Table of precedence
@@ -89,31 +104,50 @@ public class Parser {
 
 	private Expression ParsePrimaryExpression() {
 		switch (At().Key) {
-			case TokenType.OpenParen:
+			case OpenParen:
 				Eat();
 				Expression tempExpr = ParseExpr();
-				Expect(TokenType.CloseParen, "Your lose your parenthesis count => )");
+				Expect(CloseParen, "Your lose your parenthesis count => )");
 				return tempExpr;
 			case TokenType.Number:
 				return new NumberLiteral(Eat().Value);
 			case TokenType.Text:
 				return new TextLiteral(Eat().Value);
-			case TokenType.Identifier: {
+			case Identifier: {
 				Token temp = Eat();
-				return At().Key == TokenType.OpenParen
-					       ? throw new NotImplementedException("Function Calls are not implemented yet.")
+				return At().Key == OpenParen
+					       ? new FunCall(temp.Value, ArgsGatherer(ParseExpr))
 					       : new VarName(temp.Value);
 			}
-			case TokenType.BinaryValue:
+			case BinaryValue:
 				return new BooleanLiteral(Eat().Value);
 			case TokenType.Null: {
 				Eat();
 				return new NullLiteral();
 			}
-			default: throw new Exception("Unexpected Token Found!!");
+			default: throw new Exception($"Unexpected Token Found!! => {At().Value}");
 		}
 	}
 
+	// Aux Methods
+
+	private T[] ArgsGatherer<T>(Func<T> getExpr) {
+		Expect(OpenParen, "You need to declare your arguments in the () place,");
+		if (At().Key is CloseParen) return new T[] { };
+		List<T> args = new();
+		while (true) {
+			args.Add(getExpr());
+			if (At().Key == ColonConjunction) {
+				Eat();
+				continue;
+			}
+
+			Expect(CloseParen, "Close your function argument declaration scope.");
+			break;
+		}
+
+		return args.ToArray();
+	}
 
 	// Pointers 
 	private int _at;

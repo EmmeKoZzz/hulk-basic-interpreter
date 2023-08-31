@@ -6,6 +6,8 @@ public enum ASTNode {
 	Program,
 	Var,
 	VarDeclaration,
+	FunCall,
+	FunDeclaration,
 	Number,
 	Text,
 	Null,
@@ -53,8 +55,19 @@ public class AST : Statement {
 public class VarDeclaration : Statement {
 	public readonly string Sym;
 	public readonly Expression Value;
+
 	public VarDeclaration(string sym, Expression value) : base(ASTNode.VarDeclaration) {
 		(Sym, Value) = (sym, value);
+	}
+}
+
+public class FunDeclaration : Statement {
+	public readonly string Sym;
+	public readonly VarName[] Args;
+	public readonly IStmt Body;
+
+	public FunDeclaration(string sym, VarName[] args, IStmt body) : base(ASTNode.FunDeclaration) {
+		(Sym, Args, Body) = (sym, args, body);
 	}
 }
 
@@ -111,7 +124,18 @@ public class TextLiteral : Expression {
 //
 
 public class VarName : Expression {
-	public string Symbol;
+	public readonly string Symbol;
 
 	public VarName(string sym) : base(ASTNode.Var) => Symbol = sym;
+}
+
+// 
+
+public class FunCall : Expression {
+	public readonly string Symbol;
+	public Expression[] Args;
+
+	public FunCall(string symbol, Expression[] args) : base(ASTNode.FunCall) {
+		(Symbol, Args) = (symbol, args);
+	}
 }

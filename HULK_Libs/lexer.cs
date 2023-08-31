@@ -15,6 +15,7 @@ public enum TokenType {
 	// Operators
 	BinaryOperator,
 	AssignOperator,
+	LambdaOperator,
 
 	// Group Tokens
 	OpenParen,
@@ -73,10 +74,12 @@ public static class Lexer {
 					expression = expression[1..];
 					continue;
 				case '+' or '-' or '/' or '*' or '%' or '^' or '>' or '<' or '=' or '@': {
-					match = expression is [_, '=', ..] ? expression[..2] : at.ToString();
-					expression = match == "="
-						             ? AddToken(expression, InitTk(TokenType.AssignOperator, match))
-						             : AddToken(expression, InitTk(TokenType.BinaryOperator, match));
+					match = expression is [_, '=', ..] or ['=', '>', ..] ? expression[..2] : at.ToString();
+					expression = match switch {
+					"=" => AddToken(expression, InitTk(TokenType.AssignOperator, match)),
+					"=>" => AddToken(expression, InitTk(TokenType.LambdaOperator, match)),
+					_ => AddToken(expression, InitTk(TokenType.BinaryOperator, match)),
+					};
 					continue;
 				}
 				case '"' or '\'': {
