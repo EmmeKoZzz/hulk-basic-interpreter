@@ -24,8 +24,10 @@ public class Parser {
 
 	private IStmt ParseStmt() =>
 		At().Key switch {
+			// STATEMENTS
 			TokenType.FunctionDeclarator => ParseFunDeclaration(),
 			TokenType.OpenVar or TokenType.ColonConjunction => ParseVarDeclaration(),
+			// EXPRESSIONS 
 			_ => ParseExpr()
 		};
 

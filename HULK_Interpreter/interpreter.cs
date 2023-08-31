@@ -45,7 +45,7 @@ public class Interpreter {
 			"+" or "-" or "/" or "*" or "%" or "^" => EvalMathExpr(left, right, expr.Op),
 			">" or "<" or "==" or ">=" or "<=" => EvalComparativeExpr(left, right, expr.Op),
 			"@" => EvalConcatExpr(left, right),
-			_ => throw new NotImplementedException()
+			_ => throw new Exception("not valid operator :p .")
 		};
 	}
 
@@ -66,7 +66,12 @@ public class Interpreter {
 
 
 	private Boolean EvalComparativeExpr(IRuntimeValue left, IRuntimeValue right, string op) {
-		if (op == "==") return EqualRuntimeType();
+		// if members are different type the they are not the same
+		if (left.Type != right.Type)
+			return new Boolean(false);
+
+		if (op == "==")
+			return new Boolean(left.Value.ToString() == right.Value.ToString());
 
 		CheckNumMembersType(left, right, $"Can't operate {op} for not number members.");
 		Func<IRuntimeValue, float> getNum = GetRuntimeVal<float>;
@@ -78,19 +83,6 @@ public class Interpreter {
 			"<" => new Boolean(getNum(left) < getNum(right)),
 			_ => throw new ArgumentOutOfRangeException(nameof(op), op, null)
 		};
-
-		Boolean EqualRuntimeType() {
-			// if members are different type the they are not the same
-			if (left.Type != right.Type)
-				return new Boolean(false);
-
-			return left.Type switch {
-				RuntimeType.Number => new Boolean(GetRuntimeVal<float>(left) == GetRuntimeVal<float>(right)),
-				RuntimeType.Bool => new Boolean(GetRuntimeVal<bool>(left) == GetRuntimeVal<bool>(right)),
-				RuntimeType.Text => new Boolean(GetRuntimeVal<string>(left) == GetRuntimeVal<string>(right)),
-				_ => new Boolean(true)
-			};
-		}
 	}
 
 	private Text EvalConcatExpr(IRuntimeValue left, IRuntimeValue right) =>
