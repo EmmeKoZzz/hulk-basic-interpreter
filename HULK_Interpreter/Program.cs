@@ -1,5 +1,5 @@
 ﻿namespace HULK_Interpreter;
-using static Interpreter;
+using HULK_libs;
 
 internal static class Program {
 	/**
@@ -8,6 +8,7 @@ internal static class Program {
 	public static void Main() {
 		// WELCOME PROMPT
 		View.Welcome();
+		Scope mainScope = new (null);
 
 		// PROGRAM
 		while (true) {
@@ -23,7 +24,8 @@ internal static class Program {
 			// Compute all expressions
 			foreach (string expression in expressions) {
 				Console.WriteLine($">>> {expression};");
-				Console.WriteLine(Interprete(expression));
+				Scope exprScope = new(mainScope);
+				Console.WriteLine(new Interpreter(exprScope).Interprete(expression));
 			}
 			break;
 		}

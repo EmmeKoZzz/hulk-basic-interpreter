@@ -5,6 +5,7 @@ namespace HULK_libs;
 public enum ASTNode {
 	Program,
 	Identifier,
+	VarDeclaration,
 	Number,
 	Text,
 	Null,
@@ -47,7 +48,17 @@ public class AST : Statement {
 	public AST() : base(ASTNode.Program) { }
 }
 
-//
+// STATEMENTS
+
+public class VarDeclaration : Statement {
+	public readonly string Sym;
+	public readonly Expression Value;
+	public VarDeclaration(string sym, Expression value) : base(ASTNode.VarDeclaration) {
+		(Sym, Value) = (sym, value);
+	}
+}
+
+// EXPRESSIONS
 
 public class BinaryExpression : Expression {
 	public Expression Right { get; }
@@ -62,17 +73,16 @@ public class BinaryExpression : Expression {
 //
 
 public class NullLiteral : Expression {
-	public string Value = "null";
 	public NullLiteral() : base(ASTNode.Null) { }
 }
 
 //
 
 public class BooleanLiteral : Expression {
-	public bool Value;
+	public readonly bool Value;
 
 	public BooleanLiteral(string value) : base(ASTNode.Boolean) {
-		this.Value = value switch {
+		Value = value switch {
 			"true" => true,
 			"false" => false,
 			_ => throw new Exception($"{value} can't be be parse into a boolean.")

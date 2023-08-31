@@ -1,5 +1,5 @@
 namespace HULK_libs;
-using static HULK_libs.Lexer;
+using static Lexer;
 
 public class Parser {
 	private readonly AST _ast = new();
@@ -21,13 +21,32 @@ public class Parser {
 	 * Methods
 	 */
 
-	private IStmt ParseStmt() {
-		return ParseExpr();
+	private IStmt ParseStmt() =>
+		At().Key switch {
+			TokenType.FunctionDeclarator => ParseFunDeclaration(),
+			TokenType.OpenVar or TokenType.ColonConjunction => ParseVarDeclaration(),
+			_ => ParseExpr()
+		};
+
+	private Statement ParseVarDeclaration() {
+		Eat();
+		Token name = Expect(TokenType.Identifier, "¡" +
+		                                          "Invalid Var Name.");
+		Expect(TokenType.AssignOperator, "After the name goes the '='... man ... bro, please focus.");
+		Statement declaration = new VarDeclaration(name.Value, ParseExpr());
+
+		if (At().Key != TokenType.ColonConjunction)
+			Expect(TokenType.CloseVar, "Need to close the var declaration with 'in'.");
+
+		return declaration;
 	}
 
-	private Expression ParseExpr() {
-		return ParseComparativeExpression();
+	private Statement ParseFunDeclaration() {
+		throw new NotImplementedException();
 	}
+
+	private Expression ParseExpr() => ParseComparativeExpression();
+
 
 	/*
 	 * Table of precedence
@@ -62,7 +81,7 @@ public class Parser {
 		ParseBinaryExpression(new[] { "*", "/", "%" }, ParsePowerExpression);
 
 	private Expression ParsePowerExpression() => ParseBinaryExpression(new[] { "^" }, ParseConcatExpression);
-    
+
 	private Expression ParseConcatExpression() => ParseBinaryExpression(new[] { "@" }, ParsePrimaryExpression);
 
 	private Expression ParsePrimaryExpression() {

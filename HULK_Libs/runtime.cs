@@ -34,6 +34,6 @@ public class Boolean : RuntimeValue<bool> {
 	public Boolean(bool value) : base(RuntimeType.Bool, value) { }
 }
 
-public class Null : RuntimeValue<string> {
-	public Null() : base(RuntimeType.Null, "null") { }
+public class Null : RuntimeValue<object?> {
+	public Null() : base(RuntimeType.Null, null) { }
 }

@@ -2,20 +2,24 @@ namespace HULK_Interpreter;
 
 using HULK_libs;
 
-public static class Interpreter {
-	
+public class Interpreter {
+	private readonly Scope _scope;
+
+	public Interpreter(Scope scope) {
+		_scope = scope;
+	}
 	/*
 	 * Public Methods
 	 */
 
-	public static string Interprete(string src) =>
-		InterpreteASTNode(Parser.GetAST(src)).Value.ToString() ?? string.Empty;
+	public string Interprete(string src) => InterpreteASTNode(Parser.GetAST(src)).Value.ToString() ?? string.Empty;
+
 
 	/*
 	 * Private Methods
 	 */
 
-	private static IRuntimeValue InterpreteASTNode(IStmt ast) =>
+	private IRuntimeValue InterpreteASTNode(IStmt ast) =>
 		ast.Kind switch {
 			ASTNode.Program => EvalProgramBody(((AST)ast).Body),
 			ASTNode.Identifier => throw new NotImplementedException(),
@@ -24,16 +28,17 @@ public static class Interpreter {
 			ASTNode.Null => new Null(),
 			ASTNode.Boolean => new Boolean(((BooleanLiteral)ast).Value),
 			ASTNode.BinaryExpression => EvalBinaryExpr((BinaryExpression)ast),
+			ASTNode.VarDeclaration => EvalVarDeclaration((VarDeclaration)ast),
 			_ => throw new ArgumentOutOfRangeException()
 		};
 
-	private static IRuntimeValue EvalProgramBody(List<IStmt> body) {
+	private IRuntimeValue EvalProgramBody(List<IStmt> body) {
 		IRuntimeValue last = new Null();
 		foreach (IStmt stmt in body) last = InterpreteASTNode(stmt);
 		return last;
 	}
 
-	private static IRuntimeValue EvalBinaryExpr(BinaryExpression expr) {
+	private IRuntimeValue EvalBinaryExpr(BinaryExpression expr) {
 		IRuntimeValue left = InterpreteASTNode(expr.Left);
 		IRuntimeValue right = InterpreteASTNode(expr.Right);
 
@@ -45,7 +50,7 @@ public static class Interpreter {
 		};
 	}
 
-	private static Number EvalMathExpr(IRuntimeValue left, IRuntimeValue right, string op) {
+	private Number EvalMathExpr(IRuntimeValue left, IRuntimeValue right, string op) {
 		CheckNumMembersType(left, right, $"Can't operate {op} for not number members.");
 		Func<IRuntimeValue, float> get = GetRuntimeVal<float>;
 
@@ -61,7 +66,7 @@ public static class Interpreter {
 	}
 
 
-	private static Boolean EvalComparativeExpr(IRuntimeValue left, IRuntimeValue right, string op) {
+	private Boolean EvalComparativeExpr(IRuntimeValue left, IRuntimeValue right, string op) {
 		Func<IRuntimeValue, object> get = GetRuntimeVal<object>;
 
 		if (op == "==") return new Boolean(get(left) == get(right));
@@ -78,8 +83,12 @@ public static class Interpreter {
 		};
 	}
 
-	private static Text EvalConcatExpr(IRuntimeValue left, IRuntimeValue right) =>
+	private Text EvalConcatExpr(IRuntimeValue left, IRuntimeValue right) =>
 		new($"{GetRuntimeVal<object>(left)}{GetRuntimeVal<object>(right)}");
+
+	private Null EvalVarDeclaration(VarDeclaration declaration) {
+		throw new NotImplementedException();
+	}
 
 	// Generic Get Value
 	private static T GetRuntimeVal<T>(IRuntimeValue num) => (T)num.Value;
