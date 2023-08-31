@@ -1,4 +1,5 @@
 namespace HULK_libs;
+
 using static Lexer;
 
 public class Parser {
@@ -95,8 +96,12 @@ public class Parser {
 				return new NumberLiteral(Eat().Value);
 			case TokenType.Text:
 				return new TextLiteral(Eat().Value);
-			case TokenType.Identifier:
-				return new Identifier(Eat().Value);
+			case TokenType.Identifier: {
+				Token temp = Eat();
+				return At().Key == TokenType.OpenParen
+					       ? throw new NotImplementedException("Function Calls are not implemented yet.")
+					       : new VarName(temp.Value);
+			}
 			case TokenType.BinaryValue:
 				return new BooleanLiteral(Eat().Value);
 			case TokenType.Null: {

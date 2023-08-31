@@ -14,7 +14,6 @@ public class Interpreter {
 
 	public string Interprete(string src) => InterpreteASTNode(Parser.GetAST(src)).Value.ToString() ?? string.Empty;
 
-
 	/*
 	 * Private Methods
 	 */
@@ -22,7 +21,7 @@ public class Interpreter {
 	private IRuntimeValue InterpreteASTNode(IStmt ast) =>
 		ast.Kind switch {
 			ASTNode.Program => EvalProgramBody(((AST)ast).Body),
-			ASTNode.Identifier => throw new NotImplementedException(),
+			ASTNode.Var => _scope.GetVarVal(((VarName)ast).Symbol),
 			ASTNode.Number => new Number(((NumberLiteral)ast).Value),
 			ASTNode.Text => new Text(((TextLiteral)ast).Value),
 			ASTNode.Null => new Null(),
@@ -67,9 +66,7 @@ public class Interpreter {
 
 
 	private Boolean EvalComparativeExpr(IRuntimeValue left, IRuntimeValue right, string op) {
-		Func<IRuntimeValue, object> get = GetRuntimeVal<object>;
-
-		if (op == "==") return new Boolean(get(left) == get(right));
+		if (op == "==") return EqualRuntimeType();
 
 		CheckNumMembersType(left, right, $"Can't operate {op} for not number members.");
 		Func<IRuntimeValue, float> getNum = GetRuntimeVal<float>;
@@ -81,13 +78,30 @@ public class Interpreter {
 			"<" => new Boolean(getNum(left) < getNum(right)),
 			_ => throw new ArgumentOutOfRangeException(nameof(op), op, null)
 		};
+
+		Boolean EqualRuntimeType() {
+			// if members are different type the they are not the same
+			if (left.Type != right.Type)
+				return new Boolean(false);
+
+			return left.Type switch {
+				RuntimeType.Number => new Boolean(GetRuntimeVal<float>(left) == GetRuntimeVal<float>(right)),
+				RuntimeType.Bool => new Boolean(GetRuntimeVal<bool>(left) == GetRuntimeVal<bool>(right)),
+				RuntimeType.Text => new Boolean(GetRuntimeVal<string>(left) == GetRuntimeVal<string>(right)),
+				_ => new Boolean(true)
+			};
+		}
 	}
 
 	private Text EvalConcatExpr(IRuntimeValue left, IRuntimeValue right) =>
 		new($"{GetRuntimeVal<object>(left)}{GetRuntimeVal<object>(right)}");
 
+	// ------- Statements ----------
+
 	private Null EvalVarDeclaration(VarDeclaration declaration) {
-		throw new NotImplementedException();
+		bool success = _scope.DeclareVar(declaration.Sym, InterpreteASTNode(declaration.Value));
+		if (success) return new Null();
+		throw new Exception("Can't Declare a Variable that it's already declare.");
 	}
 
 	// Generic Get Value

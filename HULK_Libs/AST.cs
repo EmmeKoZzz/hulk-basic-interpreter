@@ -4,7 +4,7 @@ namespace HULK_libs;
 
 public enum ASTNode {
 	Program,
-	Identifier,
+	Var,
 	VarDeclaration,
 	Number,
 	Text,
@@ -110,8 +110,8 @@ public class TextLiteral : Expression {
 
 //
 
-public class Identifier : Expression {
+public class VarName : Expression {
 	public string Symbol;
 
-	public Identifier(string sym) : base(ASTNode.Identifier) => Symbol = sym;
+	public VarName(string sym) : base(ASTNode.Var) => Symbol = sym;
 }

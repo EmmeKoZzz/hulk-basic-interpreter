@@ -14,11 +14,11 @@ public interface IRuntimeValue {
 
 public abstract class RuntimeValue<TValue> : IRuntimeValue {
 	public RuntimeType Type { get; }
-	public object Value { get; }
+	public object? Value { get; }
 
 	protected RuntimeValue(RuntimeType type, TValue value) {
 		Type = type;
-		Value = value ?? throw new ArgumentNullException(nameof(value));
+		Value = value;
 	}
 }
 

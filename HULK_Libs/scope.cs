@@ -5,7 +5,6 @@ public class Scope {
 	private readonly Scope? _upperScope;
 	private Dictionary<string, IRuntimeValue> Vars { get; }
 
-
 	public Scope(Scope? parent) {
 		_upperScope = parent;
 		Vars = new Dictionary<string, IRuntimeValue>();
