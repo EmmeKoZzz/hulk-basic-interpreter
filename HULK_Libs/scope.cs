@@ -1,4 +1,5 @@
 namespace HULK_libs;
+using System.Diagnostics.CodeAnalysis;
 
 public class Scope {
 	private readonly Scope? _upperScope;
