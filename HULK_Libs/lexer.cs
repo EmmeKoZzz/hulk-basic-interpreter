@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 namespace HULK_libs;
 
 public enum TokenType {
+	// 
 	Identifier,
 	FunctionDeclarator,
 
@@ -26,6 +27,10 @@ public enum TokenType {
 	// Conjunction
 	ColonConjunction,
 
+	// Condition
+	PositiveCondition,
+	NegativeCondition,
+
 	// End of expression
 	EOE
 }
@@ -42,7 +47,9 @@ public static class Lexer {
 	// Regex patterns
 	private static bool IsAlpha(char c) => Regex.Match(c.ToString(), "[a-zA-Z_]").Success;
 	private static bool IsDigit(char c) => Regex.Match(c.ToString(), @"\d").Success;
-	private static string GetToken(string src, string pattern) => Regex.Match(src, pattern).Value;
+	private static string Text(string src) => Regex.Match(src, """.((?<=")([^"]+)|((?<=')[^']+))""").Groups[1].Value;
+	private static string Word(string src) => Regex.Match(src, @"^\w+").Value;
+	private static string Number(string src) => Regex.Match(src, @"^\d+").Value;
 
 	// Aux Methods
 	private static readonly Func<TokenType, string, Token> InitTk = Token.Init;
@@ -54,7 +61,9 @@ public static class Lexer {
 		{ "function", TokenType.FunctionDeclarator },
 		{ "true", TokenType.BinaryValue },
 		{ "false", TokenType.BinaryValue },
-		{ "null", TokenType.Null }
+		{ "null", TokenType.Null },
+		{ "if", TokenType.PositiveCondition },
+		{ "else", TokenType.NegativeCondition }
 	};
 
 	// Set Means to Expression parts;
@@ -76,14 +85,14 @@ public static class Lexer {
 				case '+' or '-' or '/' or '*' or '%' or '^' or '>' or '<' or '=' or '@': {
 					match = expression is [_, '=', ..] or ['=', '>', ..] ? expression[..2] : at.ToString();
 					expression = match switch {
-					"=" => AddToken(expression, InitTk(TokenType.AssignOperator, match)),
-					"=>" => AddToken(expression, InitTk(TokenType.LambdaOperator, match)),
-					_ => AddToken(expression, InitTk(TokenType.BinaryOperator, match)),
+						"=" => AddToken(expression, InitTk(TokenType.AssignOperator, match)),
+						"=>" => AddToken(expression, InitTk(TokenType.LambdaOperator, match)),
+						_ => AddToken(expression, InitTk(TokenType.BinaryOperator, match)),
 					};
 					continue;
 				}
 				case '"' or '\'': {
-					match = GetToken(expression[1..], """(?<!")[^"]+|(?<!')[^']+""");
+					match = Text(expression);
 					tk = InitTk(TokenType.Text, match);
 					expression = AddToken(expression, tk, 2);
 					continue;
@@ -101,7 +110,7 @@ public static class Lexer {
 
 			// Multiple Characters Tokens
 			if (IsAlpha(at)) {
-				match = GetToken(expression, @"^\w+");
+				match = Word(expression);
 				tk = Keywords.TryGetValue(match, out TokenType type)
 					     ? InitTk(type, match)
 					     : InitTk(TokenType.Identifier, match);
@@ -116,7 +125,7 @@ public static class Lexer {
 
 			if (!IsDigit(at)) throw new Exception("char unrecognizable: " + at);
 
-			match = GetToken(expression, @"^\d+");
+			match = Number(expression);
 			tk = InitTk(TokenType.Number, match);
 			expression = AddToken(expression, tk);
 		}
