@@ -1,5 +1,3 @@
-using System.Linq.Expressions;
-
 namespace HULK_libs;
 
 public enum ASTNode {
@@ -13,6 +11,7 @@ public enum ASTNode {
 	Null,
 	Boolean,
 	BinaryExpression,
+	Condition,
 }
 
 public enum StmtType {
@@ -133,9 +132,21 @@ public class VarName : Expression {
 
 public class FunCall : Expression {
 	public readonly string Symbol;
-	public Expression[] Args;
+	public readonly Expression[] Args;
 
 	public FunCall(string symbol, Expression[] args) : base(ASTNode.FunCall) {
 		(Symbol, Args) = (symbol, args);
+	}
+}
+
+// 
+
+public class Condition : Expression {
+	public readonly Expression ConditionExpr;
+	public readonly Expression Positive;
+	public readonly Expression Negative;
+
+	public Condition(Expression condition, Expression positive, Expression negative) : base(ASTNode.Condition) {
+		(ConditionExpr, Positive, Negative) = (condition, positive, negative);
 	}
 }
