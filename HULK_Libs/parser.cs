@@ -54,8 +54,8 @@ public class Parser {
 	private Statement ParseFunDeclaration() {
 		Eat();
 		string funName = Expect(Identifier, "Need to Set a Function Identifier.").Value;
-		VarName[] @params = ArgsGatherer(() => new VarName(
-			                                 Expect(Identifier, "Invalid Syntax found declaring function args.").Value));
+		string[] @params = ArgsGatherer(() => new VarName(
+			                                 Expect(Identifier, "Invalid Syntax found declaring function args.").Value).Symbol);
 		Expect(LambdaOperator, "Use the lambda operator to declare a body");
 		return new FunDeclaration(funName,@params,ParseStmt());
 	}
@@ -133,7 +133,10 @@ public class Parser {
 
 	private T[] ArgsGatherer<T>(Func<T> getExpr) {
 		Expect(OpenParen, "You need to declare your arguments in the () place,");
-		if (At().Key is CloseParen) return new T[] { };
+		if (At().Key is CloseParen) {
+			Eat();
+			return new T[] { };
+		}
 		List<T> args = new();
 		while (true) {
 			args.Add(getExpr());

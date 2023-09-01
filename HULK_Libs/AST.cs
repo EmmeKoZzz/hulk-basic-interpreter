@@ -63,10 +63,10 @@ public class VarDeclaration : Statement {
 
 public class FunDeclaration : Statement {
 	public readonly string Sym;
-	public readonly VarName[] Args;
+	public readonly string[] Args;
 	public readonly IStmt Body;
 
-	public FunDeclaration(string sym, VarName[] args, IStmt body) : base(ASTNode.FunDeclaration) {
+	public FunDeclaration(string sym, string[] args, IStmt body) : base(ASTNode.FunDeclaration) {
 		(Sym, Args, Body) = (sym, args, body);
 	}
 }
