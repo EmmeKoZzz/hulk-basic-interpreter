@@ -99,7 +99,12 @@ public class Parser {
 		Expression conExpr = ParseExpr();
 		Expect(CloseParen, "You need to open the enclose the conditional expression between parenthesis, in fail ad ')'");
 		IStmt positiveExpr = ParseStmt();
-		IStmt negativeExpr = Eat().Key == NegativeCondition ? ParseStmt() : new NullLiteral();
+		IStmt negativeExpr = new NullLiteral();
+		
+		if (At().Key != NegativeCondition) return new Condition(conExpr, positiveExpr, negativeExpr);
+		
+		Eat();
+		negativeExpr = ParseStmt();
 		return new Condition(conExpr, positiveExpr, negativeExpr);
 	}
 
