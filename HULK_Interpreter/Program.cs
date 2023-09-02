@@ -37,18 +37,18 @@ internal static class Program {
 
 	private static Scope SetupGlobalScope() {
 		Scope env = new();
-		
+
 		// built-in Variables
 		env.DeclareVar("PI", new RuntimeNum(float.Pi));
 		env.DeclareVar("E", new RuntimeNum(float.E));
 		env.DeclareVar("TAU", new RuntimeNum(float.Tau));
-		
+
 		// built-in Functions
-		env.DeclareFun("print", new[] { "x" }, Parser.GetAST("x"));
-		env.DeclareFun("log",new []{"x","base"}, new MathFun(MathFunType.Log));
-		env.DeclareFun("cos",new []{"grade"}, new MathFun(MathFunType.Cos));
-		env.DeclareFun("sin",new []{"grade"}, new MathFun(MathFunType.Sin));
-		
+		env.DeclareFun("log", new[] { "x", "base" }, new MathFun(MathFunType.Log));
+		env.DeclareFun("cos", new[] { "grade" }, new MathFun(MathFunType.Cos));
+		env.DeclareFun("sin", new[] { "grade" }, new MathFun(MathFunType.Sin));
+		env.DeclareFun("print", new[] { "src" }, new PrintFun());
+
 		// return global
 		return env;
 	}

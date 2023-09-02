@@ -12,7 +12,8 @@ public enum ASTNode {
 	Boolean,
 	BinaryExpression,
 	Condition,
-	Math
+	Math,
+	Print
 }
 
 public enum StmtType {
@@ -165,4 +166,8 @@ public enum MathFunType {
 public class MathFun : Expression {
 	public MathFunType FunType;
 	public MathFun(MathFunType type) : base(ASTNode.Math) => FunType = type;
+}
+
+public class PrintFun: Expression {
+	public PrintFun() : base(ASTNode.Print){ }
 }

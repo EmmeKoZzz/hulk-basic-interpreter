@@ -34,6 +34,7 @@ public class Interpreter {
 			ASTNode.FunCall => ResolveFunCall((FunCall)ast),
 			ASTNode.Condition => EvalConditionalExpr((Condition)ast),
 			ASTNode.Math => EvalMathFunction((MathFun)ast),
+			ASTNode.Print => EvalPrintFunction(),
 			_ => new RuntimeNull()
 		} ?? throw new InvalidOperationException();
 
@@ -41,18 +42,20 @@ public class Interpreter {
 	 * BUILT-IN Functions
 	 */
 
-	private RuntimeNum EvalMathFunction(MathFun fun) {
-		return fun.FunType switch {
-			MathFunType.Log => new RuntimeNum(float.Log(Param("x"), Param("base"))),
-			MathFunType.Cos => new RuntimeNum(float.Cos(Param("grade"))),
-			MathFunType.Sin => new RuntimeNum(float.Sin(Param("grade"))),
+	private RuntimeNum EvalMathFunction(MathFun fun) =>
+		fun.FunType switch {
+			MathFunType.Log => new RuntimeNum(float.Log(Param<float>("x"), Param<float>("base"))),
+			MathFunType.Cos => new RuntimeNum(float.Cos(Param<float>("grade"))),
+			MathFunType.Sin => new RuntimeNum(float.Sin(Param<float>("grade"))),
 			_ => throw new ArgumentOutOfRangeException()
 		};
-		float Param(string var) => (float)_scope.GetVarVal(var)!.Value!;
+
+	private RuntimeNull EvalPrintFunction() {
+		Console.WriteLine(Param<object>("src"));
+		return new RuntimeNull();
 	}
 
-	// private RuntimeNull EvalPrintFunction() { }
-
+	private T Param<T>(string var) => (T)_scope.GetVarVal(var)!.Value!;
 	/*
 	 * -------- Statements ----------
 	 */
@@ -187,8 +190,13 @@ public class Interpreter {
 		if (left.Type != right.Type)
 			return new RuntimeBool(false);
 
-		if (op == "==")
+		if (op == "==") {
+			if (left.Value == null && right.Value == null)
+				return new RuntimeBool(true);
+			if (left.Value == null || right.Value == null)
+				return new RuntimeBool(false);
 			return new RuntimeBool(left.Value!.ToString() == right.Value!.ToString());
+		}
 
 		CheckNumMembersType(left, right, $"Can't operate {op} for not number members.");
 		Func<IRuntimeValue, float> getNum = GetRuntimeVal<float>;
