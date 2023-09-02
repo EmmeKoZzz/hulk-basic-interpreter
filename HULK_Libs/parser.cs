@@ -149,10 +149,9 @@ public class Parser {
 			case Text:
 				return new TextLiteral(Eat().Value);
 			case Identifier: {
-				Token temp = Eat();
-				return At().Key == OpenParen
-					       ? new FunCall(temp.Value, ArgsGatherer(ParseExpr))
-					       : new VarName(temp.Value);
+				return Peek() == OpenParen
+					       ? new FunCall(Eat().Value, ArgsGatherer(ParseExpr))
+					       : new VarName(Eat().Value);
 			}
 			case BinaryValue:
 				return new BooleanLiteral(Eat().Value);

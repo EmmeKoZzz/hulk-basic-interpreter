@@ -45,7 +45,7 @@ public class Scope {
 
 		Declaration(
 			env.Functions.TryAdd(sym, new Tuple<string[], IStmt>(args, body)),
-			"Can't Declare a Function that it's already declare.");
+			"Can't define a Function that it's already defined.");
 	}
 
 	// CALL

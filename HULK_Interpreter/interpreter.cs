@@ -33,9 +33,25 @@ public class Interpreter {
 			ASTNode.FunDeclaration => EvalFunDeclaration((FunDeclaration)ast),
 			ASTNode.FunCall => ResolveFunCall((FunCall)ast),
 			ASTNode.Condition => EvalConditionalExpr((Condition)ast),
+			ASTNode.Math => EvalMathFunction((MathFun)ast),
 			_ => new RuntimeNull()
 		} ?? throw new InvalidOperationException();
 
+	/*
+	 * BUILT-IN Functions
+	 */
+
+	private RuntimeNum EvalMathFunction(MathFun fun) {
+		return fun.FunType switch {
+			MathFunType.Log => new RuntimeNum(float.Log(Param("x"), Param("base"))),
+			MathFunType.Cos => new RuntimeNum(float.Cos(Param("grade"))),
+			MathFunType.Sin => new RuntimeNum(float.Sin(Param("grade"))),
+			_ => throw new ArgumentOutOfRangeException()
+		};
+		float Param(string var) => (float)_scope.GetVarVal(var)!.Value!;
+	}
+
+	// private RuntimeNull EvalPrintFunction() { }
 
 	/*
 	 * -------- Statements ----------

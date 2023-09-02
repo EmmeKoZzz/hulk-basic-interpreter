@@ -12,6 +12,7 @@ public enum ASTNode {
 	Boolean,
 	BinaryExpression,
 	Condition,
+	Math
 }
 
 public enum StmtType {
@@ -149,4 +150,19 @@ public class Condition : Expression {
 	public Condition(Expression condition, IStmt positive, IStmt negative) : base(ASTNode.Condition) {
 		(ConditionExpr, Positive, Negative) = (condition, positive, negative);
 	}
+}
+
+/*
+ * Built-in Functions
+ */
+
+public enum MathFunType {
+	Log,
+	Cos,
+	Sin
+}
+
+public class MathFun : Expression {
+	public MathFunType FunType;
+	public MathFun(MathFunType type) : base(ASTNode.Math) => FunType = type;
 }
