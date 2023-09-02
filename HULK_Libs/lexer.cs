@@ -37,7 +37,7 @@ public enum TokenType {
 
 public struct Token {
 	public TokenType Key { get; }
-	public string Value { get; }
+	public string? Value { get; }
 
 	private Token(TokenType type, string src) => (Key, Value) = (type, src);
 	public static Token Init(TokenType type, string src) => new Token(type, src);

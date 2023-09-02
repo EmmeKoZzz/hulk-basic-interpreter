@@ -52,20 +52,20 @@ public class AST : Statement {
 // STATEMENTS
 
 public class VarDeclaration : Statement {
-	public readonly string Sym;
+	public readonly string? Sym;
 	public readonly Expression Value;
 
-	public VarDeclaration(string sym, Expression value) : base(ASTNode.VarDeclaration) {
+	public VarDeclaration(string? sym, Expression value) : base(ASTNode.VarDeclaration) {
 		(Sym, Value) = (sym, value);
 	}
 }
 
 public class FunDeclaration : Statement {
-	public readonly string Sym;
+	public readonly string? Sym;
 	public readonly string[] Args;
-	public readonly IStmt Body;
+	public readonly AST Body;
 
-	public FunDeclaration(string sym, string[] args, IStmt body) : base(ASTNode.FunDeclaration) {
+	public FunDeclaration(string? sym, string[] args, AST body) : base(ASTNode.FunDeclaration) {
 		(Sym, Args, Body) = (sym, args, body);
 	}
 }
@@ -75,9 +75,9 @@ public class FunDeclaration : Statement {
 public class BinaryExpression : Expression {
 	public Expression Right { get; }
 	public Expression Left { get; }
-	public string Op { get; }
+	public string? Op { get; }
 
-	public BinaryExpression(Expression left, string op, Expression right) : base(ASTNode.BinaryExpression) {
+	public BinaryExpression(Expression left, string? op, Expression right) : base(ASTNode.BinaryExpression) {
 		(Op, Left, Right) = (op, left, right);
 	}
 }
@@ -93,7 +93,7 @@ public class NullLiteral : Expression {
 public class BooleanLiteral : Expression {
 	public readonly bool Value;
 
-	public BooleanLiteral(string value) : base(ASTNode.Boolean) {
+	public BooleanLiteral(string? value) : base(ASTNode.Boolean) {
 		Value = value switch {
 			"true" => true,
 			"false" => false,
@@ -107,7 +107,7 @@ public class BooleanLiteral : Expression {
 public class NumberLiteral : Expression {
 	public readonly float Value;
 
-	public NumberLiteral(string value) : base(ASTNode.Number) {
+	public NumberLiteral(string? value) : base(ASTNode.Number) {
 		if (!float.TryParse(value, out Value)) throw new Exception($"{value} isn't a valid number.");
 	}
 }
@@ -115,26 +115,26 @@ public class NumberLiteral : Expression {
 //
 
 public class TextLiteral : Expression {
-	public readonly string Value;
+	public readonly string? Value;
 
-	public TextLiteral(string text) : base(ASTNode.Text) => Value = text;
+	public TextLiteral(string? text) : base(ASTNode.Text) => Value = text;
 }
 
 //
 
 public class VarName : Expression {
-	public readonly string Symbol;
+	public readonly string? Symbol;
 
-	public VarName(string sym) : base(ASTNode.Var) => Symbol = sym;
+	public VarName(string? sym) : base(ASTNode.Var) => Symbol = sym;
 }
 
 // 
 
 public class FunCall : Expression {
-	public readonly string Symbol;
+	public readonly string? Symbol;
 	public readonly Expression[] Args;
 
-	public FunCall(string symbol, Expression[] args) : base(ASTNode.FunCall) {
+	public FunCall(string? symbol, Expression[] args) : base(ASTNode.FunCall) {
 		(Symbol, Args) = (symbol, args);
 	}
 }
@@ -143,10 +143,10 @@ public class FunCall : Expression {
 
 public class Condition : Expression {
 	public readonly Expression ConditionExpr;
-	public readonly Expression Positive;
-	public readonly Expression Negative;
+	public readonly IStmt Positive;
+	public readonly IStmt Negative;
 
-	public Condition(Expression condition, Expression positive, Expression negative) : base(ASTNode.Condition) {
+	public Condition(Expression condition, IStmt positive, IStmt negative) : base(ASTNode.Condition) {
 		(ConditionExpr, Positive, Negative) = (condition, positive, negative);
 	}
 }

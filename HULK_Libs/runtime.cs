@@ -4,36 +4,36 @@ public enum RuntimeType {
 	Number,
 	Text,
 	Bool,
-	Null
+	Null,
 }
 
 public interface IRuntimeValue {
 	RuntimeType Type { get; }
-	object Value { get; }
+	object? Value { get; }
 }
 
 public abstract class RuntimeValue<TValue> : IRuntimeValue {
 	public RuntimeType Type { get; }
 	public object? Value { get; }
 
-	protected RuntimeValue(RuntimeType type, TValue value) {
+	protected RuntimeValue(RuntimeType type, TValue? value) {
 		Type = type;
 		Value = value;
 	}
 }
 
-public class Number : RuntimeValue<float> {
-	public Number(float value) : base(RuntimeType.Number, value) { }
+public class RuntimeNum : RuntimeValue<float> {
+	public RuntimeNum(float value) : base(RuntimeType.Number, value) { }
 }
 
-public class Text : RuntimeValue<string> {
-	public Text(string value) : base(RuntimeType.Text, value) { }
+public class RuntimeText : RuntimeValue<string> {
+	public RuntimeText(string? value) : base(RuntimeType.Text, value) { }
 }
 
-public class Boolean : RuntimeValue<bool> {
-	public Boolean(bool value) : base(RuntimeType.Bool, value) { }
+public class RuntimeBool : RuntimeValue<bool> {
+	public RuntimeBool(bool value) : base(RuntimeType.Bool, value) { }
 }
 
-public class Null : RuntimeValue<object?> {
-	public Null() : base(RuntimeType.Null, null) { }
+public class RuntimeNull : RuntimeValue<object?> {
+	public RuntimeNull(string? errMsg = null) : base(RuntimeType.Null, errMsg) { }
 }
